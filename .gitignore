@@ -1,0 +1,6 @@
+/node_modules
+/.extras
+extras.md
+npm-debug.log
+*.sublime-workspace
+*.sublime-project
