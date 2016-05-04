@@ -275,14 +275,6 @@ Object.assign(Lexer.prototype, {
 				.substring(this.position, this.position + longestOperatorLength);
 			const match = substr.match(RE_OPERATOR_WHOLE);
 
-			// console.log({
-			// 	char: this.char,
-			// 	// substr: substr,
-			// 	position: this.position,
-			// 	// length: longestOperatorLength - 1,
-			// 	match: match
-			// })
-
 			if ( ! match) {
 				throw new Error('wtf dooood there was not a opeator token found...');
 			}
@@ -293,11 +285,6 @@ Object.assign(Lexer.prototype, {
 				this.advance();
 			}
 
-			// console.log({
-			// 	after: this.position
-			// });
-			// throw 123;
-
 			return match[0];
 		}
 
@@ -306,11 +293,27 @@ Object.assign(Lexer.prototype, {
 });
 
 
+
 /**
  * Recursive descent parser modified from
  * https://github.com/mattgoldspink/tapdigit/blob/master/TapDigit.js#L448
- * as well as
- * http://jorendorff.github.io/calc/docs/calculator-parser.html
+
+	Copyright (C) 2011 Ariya Hidayat <ariya.hidayat@gmail.com>
+	Copyright (C) 2010 Ariya Hidayat <ariya.hidayat@gmail.com>
+	All rights reserved.
+
+	Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
+
+	1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+
+	2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
+
+	3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+
+	THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * This version adds support for exponents and nth root via the '**' and '√' operators
+ *
  * Note: This throw errors when passed a lexer that is parsing an empty string
  * @constructor
  * @param {Lexer} options.lexer
@@ -321,13 +324,9 @@ const Parser = exports.Parser = function Parser({ lexer }) {
 }
 
 Object.assign(Parser.prototype, {
-	peek() {
-		return this.lexer.peek(1);
-	},
-
 	parsePrimary() {
 		let token = this.lexer.peek();
-		let expr;
+		let expression;
 
 		if (token === '\x00') {
 			console.log('WTF NULL STRING TOKEN', token)
@@ -336,16 +335,16 @@ Object.assign(Parser.prototype, {
 
 		if (token === '(') {
 			token = this.lexer.next();
-			expr = this.parseExpression();
+			expression = this.parseExpression();
 			token = this.lexer.next();
 
 			if (token !== ')') {
-				throw new SyntaxError('Expecting ending paren ")"');
+				throw new SyntaxError(`Expected ")", got ${token}`);
 			}
 
 			return {
 				type: 'Expression',
-				expression: expr
+				expression: expression
 			};
 		}
 
@@ -362,75 +361,73 @@ Object.assign(Parser.prototype, {
 
 	parseUnary() {
 		let token = this.lexer.peek();
-		let expr;
 
 		if (token === '-' || token === '+') {
 			token = this.lexer.next();
-			expr = this.parseUnary();
 			return {
 				type: 'UnaryExpression',
 				operator: token,
-				expression: expr
+				expression: this.parseUnary()
 			};
 		}
 
 		return this.parsePrimary();
 	},
 
-	// I'm not sure what these pow and nth square root operators are called
+	// I'm not sure what these pow and nth square root operators are classified as
 	parsePowAndSquare() {
-		let expr = this.parseUnary();
+		let expression = this.parseUnary();
 		let token = this.lexer.peek();
 
 		while (token === '**' || token == '√') {
 			token = this.lexer.next();
-			expr = {
+			expression = {
 				type: 'BinaryExpression',
 				operator: token,
-				left: expr,
+				left: expression,
 				right: this.parseUnary()
 			};
 			token = this.lexer.peek();
 		}
 
-		return expr;
+		return expression;
 	},
 
 	parseMultiplicative() {
-		let expr = this.parsePowAndSquare();
+		let expression = this.parsePowAndSquare();
 		let token = this.lexer.peek();
 
 		while (token === '*' || token == '/') {
 			token = this.lexer.next();
-			expr = {
+			expression = {
 				type: 'BinaryExpression',
 				operator: token,
-				left: expr,
+				left: expression,
 				right: this.parsePowAndSquare()
 			};
 			token = this.lexer.peek();
 		}
 
-		return expr;
+		return expression;
 	},
 
 	parseAdditive() {
-		let expr = this.parseMultiplicative();
+		let expression = this.parseMultiplicative();
 		let token = this.lexer.peek();
 
 		while (token === '+' || token === '-') {
 			const operator = token;
 			token = this.lexer.next();
-			expr = {
+			expression = {
 				type: 'BinaryExpression',
 				operator: token,
-				left: expr,
+				left: expression,
 				right: this.parseMultiplicative()
 			};
 			token = this.lexer.peek();
 		}
 
-		return expr;
+		return expression;
 	},
 
 	parseExpression() {
@@ -439,11 +436,11 @@ Object.assign(Parser.prototype, {
 
 	parse: function () {
 		const { lexer } = this;
-		const expr = this.parseExpression();
+		const expression = this.parseExpression();
 
 		return {
 			type: 'ExpressionStatement',
-			expression: expr
+			expression: expression
 		}
 	}
 });
@@ -461,8 +458,7 @@ const operations = {
 };
 
 /**
- * Evaluator taken and modified from
- * https://github.com/mattgoldspink/tapdigit/blob/master/TapDigit.js#L358
+ * Evaluates the AST produced from the parser and returns its result
  * @return {Number}
  */
 const evaluate = exports.evaluate = function evaluate(node) {
@@ -486,23 +482,21 @@ const evaluate = exports.evaluate = function evaluate(node) {
 				case '-':
 					return -a;
 				default:
-					throw new Error(`Unsupported unary operator "${node.operator}"`);
+					throw new Error(`Parsing error: Unrecognized unary operator "${node.operator}"`);
 			}
 		case 'BinaryExpression':
 			let { left, right, operator } = node;
 			const operation = operations[operator];
-			a = evaluate(left);
-			b = evaluate(right);
 
 			if (operation === undefined) {
 				throw new Error('Unsupported operand');
 			}
 
-			return operation(a, b);
+			return operation(evaluate(left), evaluate(right));
 		default:
-			throw new Error(`Unrecognized node type "${node.type}"`);
+			throw new Error(`Parsing error: Unrecognized node type "${node.type}"`);
 	}
-}
+};
 
 /**
  * Evaluates the expression passed and returns its result.
