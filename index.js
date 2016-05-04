@@ -19,8 +19,7 @@ const Lexer = exports.Lexer = function Lexer({ data }) {
 	this.stash = [];
 }
 
-// Should probably change '√' to 'yroot'
-const operators = ['/', '*', '**', '-', '+', '√'];
+const operators = ['/', '*', '**', '-', '+', '√', '%'];
 
 const longestOperatorLength = operators
 	.reduce(function (length, item) {
@@ -211,7 +210,6 @@ Object.assign(Lexer.prototype, {
 			this.getOperatorToken();
 
 		if (token === null || token === undefined) {
-			console.log(this.position, this.input.length);
 			throw new Error(`Unrecognized token "${this.char}" at position ${this.position}`);
 		}
 
@@ -397,7 +395,7 @@ Object.assign(Parser.prototype, {
 		let expression = this.parsePowAndSquare();
 		let token = this.lexer.peek();
 
-		while (token === '*' || token == '/') {
+		while (token === '*' || token == '/' || token === '%') {
 			token = this.lexer.next();
 			expression = {
 				type: 'BinaryExpression',

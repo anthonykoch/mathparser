@@ -14,6 +14,13 @@ test('nth square root simple', function (assert) {
 	assert.end();
 });
 
+test('modulo simple', function (assert) {
+	const expected = 1;
+	const actual = setup('19 % 2');
+	assert.equal(actual, expected, 'modulo simple');
+	assert.end();
+});
+
 test('nth square root with multiplication', function (assert) {
 	const expected = 6.7400307729863883368711815695154;
 	const actual = setup('5 * 6 √ 6');
