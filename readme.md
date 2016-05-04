@@ -1,6 +1,6 @@
 # Math parser
 
-This is a project I did for a dribbble challenge for a calculator, which can be [found here](http://codepen.io/anthonykoch/pen/xVQOwb?editors=0010). It was written in a very short amount of time (like 2 days) not efficient and doesn't take floating point errors into account. 
+This is a part of a project I made for a dribbble challenge. The challenge was to make a calculator, which can be [found here](http://codepen.io/anthonykoch/pen/xVQOwb?editors=0010). The code for the calculator was written in a very short amount of time (2-3 days), and is not the most efficiently written. Also, it doesn't take floating point errors into account. 
 
 
 ## Supported expressions
