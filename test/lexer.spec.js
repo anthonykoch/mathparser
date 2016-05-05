@@ -8,10 +8,10 @@ function setup(input) {
 }
 
 operators.forEach(function (operator) {
-	test(`Lexes plus ${operator}`, function (assert) {
+	test(`Lexes operator "${operator}"`, function (assert) {
 		const expected = operator;
 		const actual = setup(expected);
-		assert.equal(actual, expected, `lexes plus ${operator}`);
+		assert.equal(actual, expected, `lexes operator "${operator}"`);
 		assert.end();
 	});
 });
