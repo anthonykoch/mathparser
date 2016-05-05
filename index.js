@@ -4,7 +4,7 @@
  * LEXER AND PARSER for mathematical expressions. The lexer is hand written with influences from Stylus's lexer, but the parser was mostly taken from elsewhere, which is listed in the description for the Parser constructor.
  */
 
-const TYPE_NUMBER_LITERAL = 'NUMBER_LITERAL';
+const TYPE_NUMBER_LITERAL = exports.TYPE_NUMBER_LITERAL = 'NUMBER_LITERAL';
 
 /**
  * A lexer, inspired by Stylus's lexer.
@@ -19,7 +19,7 @@ const Lexer = exports.Lexer = function Lexer({ data }) {
 	this.stash = [];
 }
 
-const operators = ['/', '*', '**', '-', '+', '√', '%'];
+const operators = exports.operators = ['/', '*', '**', '-', '+', '√', '%'];
 
 const longestOperatorLength = operators
 	.reduce(function (length, item) {
@@ -75,6 +75,10 @@ function isParen(char) {
 
 function isWhitespace(char) {
 	return RE_WHITESPACE.test(char);
+}
+
+function isDot(value) {
+	return value === '.';
 }
 
 Object.assign(Lexer.prototype, {
@@ -238,12 +242,12 @@ Object.assign(Lexer.prototype, {
 	getNumberToken() {
 		let numberLiteral = this.char;
 
-		if (isDigit(this.char)) {
+		if (isDigit(this.char) || isDot(this.char) && isDigit(this.getNextChar())) {
 			while (isDigit(this.advance())) {
 				numberLiteral += this.char;
 			}
 
-			if (this.char === '.') {
+			if (isDot(this.char)) {
 				do {
 					numberLiteral += this.char;
 				} while (isDigit(this.advance()))
