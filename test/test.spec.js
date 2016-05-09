@@ -1,10 +1,10 @@
 'use strict';
 
 const test = require('tape');
-const { Evaluator } = require('../index');
+const { MathParser } = require('../index');
 
 function setup(input) {
-	return new Evaluator({ data: input }).eval();
+	return MathParser.eval(input);
 }
 
 test('nth square root simple', function (assert) {

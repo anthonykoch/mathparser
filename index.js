@@ -463,20 +463,20 @@ const operations = {
  * Evaluates the AST produced from the parser and returns its result
  * @return {Number}
  */
-const evaluate = exports.evaluate = function evaluate(node) {
+const evaluateAST = exports.evaluateAST = function evaluateAST(node) {
 	let e;
 	let a;
 	let b;
 
 	switch (node.type) {
 		case 'ExpressionStatement':
-			return evaluate(node.expression);
+			return evaluateAST(node.expression);
 		case 'Expression':
-			return evaluate(node.expression);
+			return evaluateAST(node.expression);
 		case 'NumberLiteral':
 			return parseFloat(node.value);
 		case 'UnaryExpression':
-			a = evaluate(node.expression);
+			a = evaluateAST(node.expression);
 
 			switch (node.operator) {
 				case '+':
@@ -494,7 +494,7 @@ const evaluate = exports.evaluate = function evaluate(node) {
 				throw new Error('Unsupported operand');
 			}
 
-			return operation(evaluate(left), evaluate(right));
+			return operation(evaluateAST(left), evaluateAST(right));
 		default:
 			throw new Error(`Parsing error: Unrecognized node type "${node.type}"`);
 	}
@@ -507,23 +507,13 @@ const evaluate = exports.evaluate = function evaluate(node) {
  * @constructor
  * @return {Number}
  */
-const Evaluator = exports.Evaluator = function Evaluator({ data }) {
-	this.input = String(data);
-}
-
-Object.assign(Evaluator.prototype, {
-	/**
-	 * Evaluates the input passed through the constructor
-	 * @public
-	 * @return {Number}
-	 */
-	eval: function () {
-		const parser = new Parser({
-			lexer: new Lexer({ data: this.input })
-		});
-
-		const ast = parser.parse();
-		// console.log(require('util').inspect(ast, true, 20))
-		return evaluate(ast);
+const MathParser = exports.MathParser = {
+	eval(expression) {
+		return evaluateAST(
+			new Parser({
+				lexer: new Lexer({ data: expression })
+			})
+			.parse()
+		)
 	}
-});
+}

@@ -1,6 +1,6 @@
 # Math parser
 
-This is a part of a project I made for a dribbble challenge. The challenge was to make a calculator, which can be [found here](http://codepen.io/anthonykoch/pen/xVQOwb?editors=0010). The code for the calculator was written in a very short amount of time (2-3 days), and is not the most efficiently written. Also, it doesn't take floating point errors into account. 
+This is a part of a project I made for a dribbble challenge I put up on codepen. The challenge was to make a calculator, which can be [found here](http://codepen.io/anthonykoch/pen/xVQOwb?editors=0010). The code for the calculator was written in a very short amount of time (2-3 days), and is not the most efficiently written. Also, it doesn't take floating point errors into account. 
 
 
 ## Supported expressions
@@ -29,14 +29,12 @@ This is a part of a project I made for a dribbble challenge. The challenge was t
 
 ## Examples
 
-### Evaluator usage
-
 ```javascript
-const { Evaluator } = require('./index');
+const { MathParser } = require('./index');
 
 const expression = '3 * 2';
-const evaluator  new Evaluator({ data: expression });
-console.log(evaluator.eval()); // 6
+const result = MathParser.eval(expression);
+console.log(result); // 6
 ```
 
 
